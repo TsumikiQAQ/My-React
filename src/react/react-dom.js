@@ -8,6 +8,9 @@ function render(vdom,container){
 function mount(vdom,container){
     let Newdom = createDom(vdom)
     container.appendChild(Newdom)
+    if(Newdom.componentDidMount){
+        Newdom.componentDidMount()
+    }
 }
 function createDom(vdom){
     if(typeof vdom == 'string' || typeof vdom == 'number'){
@@ -56,9 +59,16 @@ function mountClassComponent(vdom){
     const {type,props,ref} = vdom
     let classNode = new type(props)
     if(ref) ref.current = classNode
+    if(classNode.componentWillMount){
+        classNode.componentWillMount()
+    }
     let classVnode = classNode.render()
     vdom.oldVnode = classNode.oldVnode = classVnode
-    return createDom(classVnode)
+    let dom = createDom(classVnode)
+        if(classNode.componentDidMount){
+            dom.componentDidMount = classNode.componentDidMount
+        }
+    return dom
 }
 function mountFunctionComponent(vdom){
     const { type,props } = vdom

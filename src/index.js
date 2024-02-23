@@ -43,28 +43,61 @@ import ReactDOM from './react/react-dom';
 //     </div>
 //   }
 // }
-class One extends React.Component{
+// class One extends React.Component{
+//   constructor(props){
+//     super(props)
+//     this.state = {
+//       num : 1
+//     }
+//     setTimeout(()=>{
+//       this.setState({num:2})
+//     },1000)
+//   }
+//   render(){
+//     return <Two num={this.state.num}></Two>
+//   }
+// } 
+
+// class Three extends React.Component {
+//   render(){
+//     return <h1>hello {this.props.num}</h1>
+//   }
+// }
+// function Two(props){
+//   return <Three num={props.num}></Three>  
+// }
+
+class Element extends React.Component{
   constructor(props){
     super(props)
-    this.state = {
-      num : 1
-    }
-    setTimeout(()=>{
-      this.setState({num:2})
-    },1000)
+    this.state = {num:1}
+    console.log('1:初始化');
+  }
+  handleClick=()=>{
+    this.setState({num:this.state.num + 1 })
   }
   render(){
-    return <Two num={this.state.num}></Two>
-  }
-} 
+    console.log('3:将要渲染');
+    return <div><h1>num:{this.state.num}</h1> 
+        <button onClick={this.handleClick}>+</button></div>
 
-class Three extends React.Component {
-  render(){
-    return <h1>hello {this.props.num}</h1>
+  }
+
+  componentWillMount(){
+    console.log('2:将要挂载');
+  }
+  componentDidMount(){
+    console.log('4:挂载完成');
+  }
+  shouldComponentUpdate(nextProps,nextState){
+    console.log('5:是否更新');
+  }
+  componentWillUpdate(){
+    console.log('6:将要更新');
+  }
+  componentDidUpdate(){
+    console.log('7:更新完毕');
   }
 }
-function Two(props){
-  return <Three num={props.num}></Three>  
-}
-let element2 = React.createElement(One,{})
+let element2 = React.createElement(Element,{})
 ReactDOM.render(element2,document.getElementById('root'));

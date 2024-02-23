@@ -27,9 +27,9 @@ class Updater{
     }
     }
     updateComponent(){
-        let {peddingState,classInstance} = this
+        let {peddingState,classInstance,nextProps} = this
         if(peddingState.length>0){
-            shouldupdate(classInstance,this.getState())
+            shouldUpdate(classInstance,nextProps,this.getState())
         }
     }
     getState(){
@@ -43,9 +43,18 @@ class Updater{
     }
 }
 
-function shouldupdate(classInstance,nextstate){
+function shouldUpdate(classInstance,nextProps,nextstate){
+    let willUpdate = true
+    if(classInstance.shouldComponentUpdate && classInstance.shouldComponentUpdate(nextProps,nextstate)){
+        willUpdate = false
+    }
     classInstance.state = nextstate
-    classInstance.forceUpdate()
+    if(willUpdate && classInstance.componentWillUpdate){
+        classInstance.componentWillUpdate()
+    }
+    if(willUpdate){
+        classInstance.forceUpdate()
+    }
 }
 
 class Component{
@@ -62,9 +71,11 @@ class Component{
         let newVnode = this.render()
         let oldVnode = this.oldVnode
         let dom = findDom(oldVnode)
-        console.log(dom);
         twoVnode(dom.parentNode,oldVnode,newVnode)
         this.oldVnode = newVnode
+        if(this.componentDidUpdate){
+            this.componentDidUpdate()
+        }
     }
 }
 
