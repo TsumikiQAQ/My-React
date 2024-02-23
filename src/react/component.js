@@ -45,7 +45,7 @@ class Updater{
 
 function shouldUpdate(classInstance,nextProps,nextstate){
     let willUpdate = true
-    if(classInstance.shouldComponentUpdate && classInstance.shouldComponentUpdate(nextProps,nextstate)){
+    if(classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(nextProps,nextstate)){
         willUpdate = false
     }
     classInstance.state = nextstate
