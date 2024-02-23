@@ -1,4 +1,4 @@
-import {twoVnode} from './react-dom'
+import {findDom, twoVnode} from './react-dom'
 
 export const updataQueue ={
     isBatchData :false,
@@ -61,7 +61,8 @@ class Component{
     forceUpdate(){
         let newVnode = this.render()
         let oldVnode = this.oldVnode
-        let dom = oldVnode.dom
+        let dom = findDom(oldVnode)
+        console.log(dom);
         twoVnode(dom.parentNode,oldVnode,newVnode)
         this.oldVnode = newVnode
     }

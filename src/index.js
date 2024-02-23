@@ -14,34 +14,57 @@ import ReactDOM from './react/react-dom';
 // let element2 = React.createElement(Element2,{
 //   name: 'test'
 // })
-function TextInput(props,ref){
-  return <input ref={ref}></input>
-}
-let ForWardTextInput = React.forwardRef(TextInput)
+// function TextInput(props,ref){
+//   return <input ref={ref}></input>
+// }
+// let ForWardTextInput = React.forwardRef(TextInput)
 // class Element3 extends React.Component {
 
 //   render(){
 //     return <h1>test2</h1>
 //   }
 // }
-class element extends React.Component{
-  constructor(props) {
+// class element extends React.Component{
+//   constructor(props) {
+//     super(props)
+//     this.state = {num:0,id:1}
+//     this.a = React.createRef()
+//   }
+//   handleClick = (event)=>{
+//     console.log(this.a.current);
+//     this.setState({num:this.state.num + 1 })
+//     this.setState({num:this.state.num + 1 })
+//   }
+//   render(){
+//     return <div>
+//       <ForWardTextInput ref={this.a}></ForWardTextInput>
+//     <h1 >hello {this.state.num}</h1>
+//     <button onClick={this.handleClick}>+</button>
+//     </div>
+//   }
+// }
+class One extends React.Component{
+  constructor(props){
     super(props)
-    this.state = {num:0,id:1}
-    this.a = React.createRef()
-  }
-  handleClick = (event)=>{
-    console.log(this.a.current);
-    this.setState({num:this.state.num + 1 })
-    this.setState({num:this.state.num + 1 })
+    this.state = {
+      num : 1
+    }
+    setTimeout(()=>{
+      this.setState({num:2})
+    },1000)
   }
   render(){
-    return <div>
-      <ForWardTextInput ref={this.a}></ForWardTextInput>
-    <h1 >hello {this.state.num}</h1>
-    <button onClick={this.handleClick}>+</button>
-    </div>
+    return <Two num={this.state.num}></Two>
+  }
+} 
+
+class Three extends React.Component {
+  render(){
+    return <h1>hello {this.props.num}</h1>
   }
 }
-let element2 = React.createElement(element,{name:'1',count:'0'})
+function Two(props){
+  return <Three num={props.num}></Three>  
+}
+let element2 = React.createElement(One,{})
 ReactDOM.render(element2,document.getElementById('root'));

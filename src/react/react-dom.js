@@ -57,12 +57,13 @@ function mountClassComponent(vdom){
     let classNode = new type(props)
     if(ref) ref.current = classNode
     let classVnode = classNode.render()
-    classNode.oldVnode = classVnode
+    vdom.oldVnode = classNode.oldVnode = classVnode
     return createDom(classVnode)
 }
 function mountFunctionComponent(vdom){
     const { type,props } = vdom
     let funcVnode =  type(props)
+    vdom.oldVnode = funcVnode
     return createDom(funcVnode)
 }
 function changeChildren(dom, children){
@@ -104,7 +105,17 @@ const ReactDOM = {
 }
 export function twoVnode(dom,oldnode,newnode){
     let newdom = createDom(newnode)
-    let olddom = oldnode.dom
+    let olddom = findDom(oldnode)
     dom.replaceChild(newdom,olddom)
+}
+export function findDom(vdom){
+    if(!vdom){
+        return null
+    }
+    if(vdom.dom){ 
+        return vdom.dom
+    }else {
+        return findDom(vdom.oldVnode)
+    }
 }
 export default ReactDOM
