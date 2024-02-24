@@ -1,6 +1,6 @@
 import addEvent from './event'
 /* eslint-disable eqeqeq */
-import { REACT_TEXT,REACT_FORWARDREF, MOVE, REACTNEXT, REACT_PROVIDER, REACT_CONTEXT} from "./type"
+import { REACT_TEXT,REACT_FORWARDREF, MOVE, REACTNEXT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO} from "./type"
 
 function render(vdom,container){
     mount(vdom,container)
@@ -22,7 +22,9 @@ function createDom(vdom){
     let {type,props,content,ref} = vdom
     let dom
 
-    if(type && type.$$typeof == REACT_CONTEXT){
+    if(type && type.$$typeof == REACT_MEMO){
+        return mountMemoComponent(vdom)
+    }else if(type && type.$$typeof == REACT_CONTEXT){
         return mountContextComponent(vdom)
     }else if(type.$$typeof == REACT_PROVIDER){
         return mountProviderComponent(vdom)
@@ -53,6 +55,13 @@ function createDom(vdom){
     vdom.dom = dom
     if(ref) ref.current = dom
     return dom
+}
+function mountMemoComponent(vdom){
+    let {type, props} = vdom
+    let renderVdom = type.type(props)
+    vdom.prevProps = props
+    vdom.oldVnode = renderVdom
+    return createDom(renderVdom)
 }
 function mountContextComponent(vdom){
     let {type, props} = vdom
@@ -162,7 +171,9 @@ export function twoVnode(parentDom,oldVnode,newVnode,nextDom){
     }
 }
 function updateElement(oldVnode,newVnode){
-    if(oldVnode.type.$$typeof == REACT_PROVIDER){
+    if(oldVnode.type.$$typeof == REACT_MEMO){
+        updateMemoComponent(oldVnode,newVnode)
+    }else if(oldVnode.type.$$typeof == REACT_PROVIDER){
         updateProviderComponent(oldVnode,newVnode)
     }else if(oldVnode.type.$$typeof == REACT_CONTEXT){
         updateContextComponent(oldVnode,newVnode)
@@ -182,6 +193,23 @@ function updateElement(oldVnode,newVnode){
             updateFunctionComponent(oldVnode,newVnode)
         }
     }
+}
+function updateMemoComponent(oldVdom,newVdom){
+    let {type,prevProps} = oldVdom
+    if(!type.compare(prevProps,newVdom.props)){
+        let oldDom = findDom(oldVdom)
+        let parentDom = oldDom.parentNode
+        let {type,props} = newVdom
+        let renderVdom = type.type(props)
+        twoVnode(parentDom,oldVdom.oldVnode,renderVdom)
+        newVdom.prevProps = props
+        newVdom.oldVnode = renderVdom
+    }else{
+        newVdom.prevProps = prevProps
+        newVdom.oldVnode = oldVdom.oldVnode
+    }
+    
+    
 }
 function updateContextComponent(oldVnode,newVnode){
     let oldDom = findDom(oldVnode)

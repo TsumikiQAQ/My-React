@@ -1,4 +1,4 @@
-import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARDREF, REACT_PROVIDER } from "./type"
+import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARDREF, REACT_MEMO, REACT_PROVIDER } from "./type"
 import { toObject,shallEqual } from "./utils"
 import Component from "./component"
 function createElement (type,config,children){
@@ -67,6 +67,13 @@ class PureComponent extends Component{
         return !shallEqual(this.props,nextProps) || !shallEqual(this.state,nextState)
     }
 }
+function memo(type,compare = shallEqual){
+    return{
+        $$typeof:REACT_MEMO,
+        compare,
+        type
+    }
+}
 const React = {
     createElement,
     Component,
@@ -74,7 +81,8 @@ const React = {
     forwardRef,
     CreateContext,
     cloneElement,
-    PureComponent
+    PureComponent,
+    memo
 }
 
 export default React
