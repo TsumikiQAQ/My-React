@@ -71,6 +71,9 @@ class Component{
         let newVnode = this.render()
         let oldVnode = this.oldVnode
         let dom = findDom(oldVnode)
+        if(this.constructor.contextType){
+            this.context = this.constructor.contextType._currentValue
+        }
         if(this.constructor.getDerivedStateFromProps){
             let newState = this.constructor.getDerivedStateFromProps(this.props,this.state)
             if(newState){

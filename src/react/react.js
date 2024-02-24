@@ -1,4 +1,4 @@
-import { REACT_ELEMENT, REACT_FORWARDREF } from "./type"
+import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARDREF, REACT_PROVIDER } from "./type"
 import { toObject } from "./utils"
 import Component from "./component"
 function createElement (type,config,children){
@@ -37,11 +37,39 @@ function forwardRef(render){
         render
     }
 }
+function CreateContext(){
+    let context = {
+        $$typeof:REACT_CONTEXT,
+        _currentValue:undefined
+    }
+    context.Provider = {
+        $$typeof:REACT_PROVIDER,
+        _context:context
+    }
+    context.Consumer ={
+        $$typeof:REACT_CONTEXT,
+        _context:context
+    }
+}
+function cloneElement(oldElement,props,children){
+    if(arguments.length > 3){
+        props.children = Array.prototype.slice.call(arguments,2).map(toObject)
+    }else if (arguments.length == 3){
+        props.children = toObject(children)
+    }
+    return {
+        ...oldElement,
+        props
+    }
+
+}
 const React = {
     createElement,
     Component,
     createRef,
-    forwardRef
+    forwardRef,
+    CreateContext,
+    cloneElement
 }
 
 export default React

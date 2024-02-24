@@ -1,6 +1,6 @@
 import addEvent from './event'
 /* eslint-disable eqeqeq */
-import { REACT_TEXT,REACT_FORWARDREF, MOVE, REACTNEXT} from "./type"
+import { REACT_TEXT,REACT_FORWARDREF, MOVE, REACTNEXT, REACT_PROVIDER, REACT_CONTEXT} from "./type"
 
 function render(vdom,container){
     mount(vdom,container)
@@ -21,10 +21,14 @@ function createDom(vdom){
     }
     let {type,props,content,ref} = vdom
     let dom
-    if(type && type.$$typeof == REACT_FORWARDREF){
+
+    if(type && type.$$typeof == REACT_CONTEXT){
+        return mountContextComponent(vdom)
+    }else if(type.$$typeof == REACT_PROVIDER){
+        return mountProviderComponent(vdom)
+    }else if(type && type.$$typeof == REACT_FORWARDREF){
         return mountForWardRefComponent(vdom)
-    }
-    if(type === REACT_TEXT){
+    }else if(type === REACT_TEXT){
         dom = document.createTextNode(content)
     }else if(typeof type == 'function'){
         if(type.isReactComponent){
@@ -50,6 +54,22 @@ function createDom(vdom){
     if(ref) ref.current = dom
     return dom
 }
+function mountContextComponent(vdom){
+    let {type, props} = vdom
+    let context = type._context
+    let renderVdom = props.children(context._currentValue)
+    vdom.oldVnode = renderVdom
+    return createDom(renderVdom)
+}
+function mountProviderComponent(vdom){
+    let {type, props} = vdom
+    let context = type._context
+    context._currentValue = props.value
+    let renderVdom = props.children
+    vdom.oldVnode = renderVdom
+    return createDom(renderVdom)
+}
+
 function mountForWardRefComponent(vdom){
     const { type,props,ref} = vdom
     let refVnode = type.render(props,ref)
@@ -58,6 +78,9 @@ function mountForWardRefComponent(vdom){
 function mountClassComponent(vdom){
     const {type,props,ref} = vdom
     let classInstance = new type(props)
+    if(type.contextType){
+        classInstance.context = type.contextType._currentValue
+    }
     if(ref) ref.current = classInstance
     if(classInstance.componentWillMount){
         classInstance.componentWillMount()
@@ -129,7 +152,6 @@ export function twoVnode(parentDom,oldVnode,newVnode,nextDom){
         }else{
             parentDom.appendChild(newDom)
         }
-
         if(newDom.componentDidMount){
             newDom.componentDidMount()
         }
@@ -141,7 +163,11 @@ export function twoVnode(parentDom,oldVnode,newVnode,nextDom){
     }
 }
 function updateElement(oldVnode,newVnode){
-    if(oldVnode.type == newVnode.type == REACT_TEXT){
+    if(oldVnode.type.$$typeof == REACT_PROVIDER){
+        updateProviderComponent(oldVnode,newVnode)
+    }else if(oldVnode.type.$$typeof == REACT_CONTEXT){
+        updateContextComponent(oldVnode,newVnode)
+    }else if(oldVnode.type == newVnode.type == REACT_TEXT){
         let currentDom = newVnode.dom = findDom(oldVnode)
         currentDom.textContent = newVnode.content
     }else if (typeof oldVnode.type == 'string'){
@@ -157,6 +183,30 @@ function updateElement(oldVnode,newVnode){
             updateFunctionComponent(oldVnode,newVnode)
         }
     }
+}
+function updateContextComponent(oldVnode,newVnode){
+    let oldDom = findDom(oldVnode)
+    let parentDom = oldDom.parentNode
+    let {type,props} = newVnode
+    let context = type._context
+
+    let renderVdom = props.children(context._currentValue)
+
+    twoVnode(parentDom,oldVnode.oldVnode,renderVdom)
+    oldVnode.oldVnode = renderVdom
+
+}
+function updateProviderComponent(oldVnode,newVnode){
+    let oldDom = findDom(oldVnode)
+    let parentDom = oldDom.parentNode
+    let {type,props} = newVnode
+    let context = type._context
+
+    context._currentValue = props.value
+    let renderVdom = props.children
+    twoVnode(parentDom,oldVnode.oldVnode,renderVdom)
+    oldVnode.oldVnode = renderVdom
+
 }
 
 function updateClassComponent(oldVnode,newVnode){
