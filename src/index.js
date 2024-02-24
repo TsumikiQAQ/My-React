@@ -67,37 +67,57 @@ import ReactDOM from './react/react-dom';
 //   return <Three num={props.num}></Three>  
 // }
 
+// class Element extends React.Component{
+//   constructor(props){
+//     super(props)
+//     this.state = {num:1}
+//     console.log('1:初始化');
+//   }
+//   handleClick=()=>{
+//     this.setState({num:this.state.num + 1 })
+//   }
+//   render(){
+//     console.log('3:将要渲染');
+//     return <div><h1>num:{this.state.num}</h1> 
+//         <button onClick={this.handleClick}>+</button></div>
+
+//   }
+
+//   componentWillMount(){
+//     console.log('2:将要挂载');
+//   }
+//   componentDidMount(){
+//     console.log('4:挂载完成');
+//   }
+//   shouldComponentUpdate(nextProps,nextState){
+//     console.log('5:是否更新');
+//   }
+//   componentWillUpdate(){
+//     console.log('6:将要更新');
+//   }
+//   componentDidUpdate(){
+//     console.log('7:更新完毕');
+//   }
+// }
 class Element extends React.Component{
-  constructor(props){
-    super(props)
-    this.state = {num:1}
-    console.log('1:初始化');
+    constructor(props) {
+      super(props)
+      this.state = {arr:['a','b','c','d','e','f','g','h','i','j']}
+    }
+    handleClick = (event)=>{
+      this.setState({arr:['a','e','f','g','b']})
+    }
+    render(){
+      return <div>
+        <ul>
+          {this.state.arr.map((item, index)=>{
+           return <li key={index}>{item}</li>
+          })}
+        </ul>
+        <button onClick={this.handleClick}>+</button>
+      </div>
+    }
   }
-  handleClick=()=>{
-    this.setState({num:this.state.num + 1 })
-  }
-  render(){
-    console.log('3:将要渲染');
-    return <div><h1>num:{this.state.num}</h1> 
-        <button onClick={this.handleClick}>+</button></div>
-
-  }
-
-  componentWillMount(){
-    console.log('2:将要挂载');
-  }
-  componentDidMount(){
-    console.log('4:挂载完成');
-  }
-  shouldComponentUpdate(nextProps,nextState){
-    console.log('5:是否更新');
-  }
-  componentWillUpdate(){
-    console.log('6:将要更新');
-  }
-  componentDidUpdate(){
-    console.log('7:更新完毕');
-  }
-}
 let element2 = React.createElement(Element,{})
+console.log(element2);
 ReactDOM.render(element2,document.getElementById('root'));

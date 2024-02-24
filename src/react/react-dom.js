@@ -1,6 +1,6 @@
 import addEvent from './event'
 /* eslint-disable eqeqeq */
-import { REACT_TEXT,REACT_FORWARDREF} from "./type"
+import { REACT_TEXT,REACT_FORWARDREF, MOVE, REACTNEXT} from "./type"
 
 function render(vdom,container){
     mount(vdom,container)
@@ -43,7 +43,7 @@ function createDom(vdom){
 
         let children = props.children
         if(children){
-            changeChildren(dom, children)
+            changeChildren( children,dom,props)
         }
     }
     vdom.dom = dom
@@ -76,15 +76,19 @@ function mountFunctionComponent(vdom){
     vdom.oldVnode = funcVnode
     return createDom(funcVnode)
 }
-function changeChildren(dom, children){
+function changeChildren( children,dom,props){
     if(typeof children == 'string' || typeof children == 'number'){
         children = {type: REACT_TEXT, content: children}
         mount(children, dom)
     }
     else if(typeof children == 'object' && children.type){
+        props.children.mountIndex = 0
         mount(children, dom)
     }else if(Array.isArray(children)){
-        children.forEach(item=>mount(item, dom))
+        children.forEach((item,index)=>{
+            item.mountIndex = index
+            mount(item, dom)
+        })
     }
 }
 function updateProps(dom,oldProps,newProps){
@@ -143,7 +147,6 @@ function updateElement(oldVnode,newVnode){
     }else if (typeof oldVnode.type == 'string'){
         let currentDom = newVnode.dom = findDom(oldVnode)
         updateProps(currentDom,oldVnode.props,newVnode.props)
-
         updateChildren(currentDom,oldVnode.props.children,newVnode.props.children)
     }else if (typeof oldVnode.type === 'function'){
         if(oldVnode.type.isReactComponent){
@@ -175,11 +178,73 @@ function updateFunctionComponent(oldVnode, newVnode){
 function updateChildren(parentDom,oldChildren,newChildren){
     oldChildren = Array.isArray(oldChildren)?oldChildren:[oldChildren]
     newChildren = Array.isArray(newChildren)?newChildren:[newChildren]
-    let maxLength = Math.max(oldChildren.length,newChildren.length)
-    for(let i=0;i<maxLength;i++){
-        let newVdom = oldChildren.find((item,index)=>index>i&&item&&findDom(item))
-        twoVnode(parentDom,oldChildren[i],newChildren[i],newVdom&&findDom(newVdom))
-    }
+    // let maxLength = Math.max(oldChildren.length,newChildren.length)
+    // for(let i=0;i<maxLength;i++){
+    //     let newVdom = oldChildren.find((item,index)=>index>i&&item&&findDom(item))
+    //     twoVnode(parentDom,oldChildren[i],newChildren[i],newVdom&&findDom(newVdom))
+    // }
+    let keyOldMap = {}
+    oldChildren.forEach((oldChild,index)=>{
+        let oldKey = oldChild.key?oldChild.key:index
+        keyOldMap[oldKey] = oldChild
+    })
+    let lastPlaceIndex = 0
+    let patch = []
+    newChildren.forEach((newChild,index)=>{
+        newChild.mountIndex = index
+        let newKey = newChild.key?newChild.key:index
+
+        let oldVchild = keyOldMap[newKey]
+        if(oldVchild){
+            updateElement(oldVchild,newChild)
+            if(oldVchild.mountIndex<lastPlaceIndex){
+                patch.push({
+                    type:MOVE,
+                    oldVchild,
+                    newChild,
+                    mountIndex:index
+                })
+                delete keyOldMap[newKey]
+            lastPlaceIndex = Math.max(oldVchild.mountIndex,newChild.mountIndex)
+            }else{
+                patch.push({
+                    type:REACTNEXT,
+                    newChild,
+                    mountIndex:index
+                })
+
+            }
+        }
+    })
+
+    let moveChildern = patch.filter(action=>action.type == MOVE).map(action=>action.oldVchild)
+
+    Object.values(keyOldMap).concat(moveChildern).forEach(oldChildren=>{
+        let currentDom = findDom(oldChildren)
+        parentDom.removeChild(currentDom)
+    })
+    patch.forEach(action=>{
+        let {type,oldVchild,newChild,mountIndex} = action
+        let childNodes = parentDom.childNodes
+        if(type == REACTNEXT){
+            let newDOM = createDom(newChild)
+            let childNode = childNodes[mountIndex]
+            if(childNode){
+                parentDom.insertBefore(newDOM, childNode)
+            }else{
+                parentDom.appendChild(newDOM)
+            }
+        }else if(type ==MOVE){
+            let oldDom = findDom(oldVchild)
+            let childNode = childNodes[mountIndex]
+            if(childNode){
+                parentDom.insertBefore(oldDom,childNode)
+            }else{
+                parentDom.appendChild(oldDom)
+            }
+        }
+    })
+
 }
 function mountVdom(parentDom,newVnode,nextDom){
     let newDom = createDom(newVnode)
