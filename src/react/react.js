@@ -1,5 +1,5 @@
 import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARDREF, REACT_PROVIDER } from "./type"
-import { toObject } from "./utils"
+import { toObject,shallEqual } from "./utils"
 import Component from "./component"
 function createElement (type,config,children){
     let key,ref
@@ -61,7 +61,11 @@ function cloneElement(oldElement,props,children){
         ...oldElement,
         props
     }
-
+}
+class PureComponent extends Component{
+    shouldComponentUpdate(nextProps, nextState){
+        return !shallEqual(this.props,nextProps) || !shallEqual(this.state,nextState)
+    }
 }
 const React = {
     createElement,
@@ -69,7 +73,8 @@ const React = {
     createRef,
     forwardRef,
     CreateContext,
-    cloneElement
+    cloneElement,
+    PureComponent
 }
 
 export default React
