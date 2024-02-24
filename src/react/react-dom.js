@@ -7,8 +7,8 @@ function render(vdom,container){
 }
 function mount(vdom,container){
     let Newdom = createDom(vdom)
-    container.appendChild(Newdom)
-    if(Newdom.componentDidMount){
+    if(Newdom) container.appendChild(Newdom)
+    if(Newdom&&Newdom.componentDidMount){
         Newdom.componentDidMount()
     }
 }
@@ -87,6 +87,7 @@ function mountClassComponent(vdom){
     }
     let classVnode = classInstance.render()
     vdom.oldVnode = classInstance.oldVnode = classVnode
+    if(!classVnode) return null
     let dom = createDom(classVnode)
         if(classInstance.componentDidMount){
             dom.componentDidMount = classInstance.componentDidMount
@@ -137,9 +138,7 @@ function updateProps(dom,oldProps,newProps){
         }
     }
 }}
-const ReactDOM = {
-    render
-}
+
 export function twoVnode(parentDom,oldVnode,newVnode,nextDom){
     if(!oldVnode&&!newVnode){
         return
@@ -321,5 +320,9 @@ export function findDom(vdom){
     }else {
         return findDom(vdom.oldVnode)
     }
+}
+const ReactDOM = {
+    render,
+    createPortal:render
 }
 export default ReactDOM
