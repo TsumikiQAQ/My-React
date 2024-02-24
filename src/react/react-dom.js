@@ -12,6 +12,40 @@ function render(vdom,container){
         twoVnode(container,vdom,vdom)
     }
 }
+export function useMemo(factory,deps){
+    if(hooksState[hookIndex]){
+        let [oldMemo,oldDeps] = hooksState[hookIndex]
+        let same = deps.every((dep,index)=> dep===oldDeps[index])
+        if(same){
+            hookIndex++
+            return oldMemo
+        }else{
+            let newMemo = factory()
+            hooksState[hookIndex] = [newMemo,deps]
+            return newMemo
+        }
+    }else{
+        let newMemo = factory()
+        hooksState[hookIndex++] = [newMemo,deps]
+        return newMemo
+    }
+}
+export function useCallback(callback,deps){
+    if(hooksState[hookIndex]){
+        let [oldCallback,oldDeps] = hooksState[hookIndex]
+        let same = deps.every((dep,index)=> dep===oldDeps[index])
+        if(same){
+            hookIndex++
+            return oldCallback
+        }else{
+            hooksState[hookIndex] = [callback,deps]
+            return callback
+        }
+    }else{
+        hooksState[hookIndex++] = [callback,deps]
+        return callback
+    }
+}
 export function useState(inistalState){
     hooksState[hookIndex] = hooksState[hookIndex] || inistalState
     let currentIndex = hookIndex
@@ -20,6 +54,15 @@ export function useState(inistalState){
         schellUpdate()
     }
     return [hooksState[hookIndex++], setState]
+}
+export function useReducer(reducer,inistalState){
+    hooksState[hookIndex] = hooksState[hookIndex] || inistalState
+    let currentIndex = hookIndex
+    function dispatch(action){
+        hooksState[currentIndex] = reducer(hooksState[currentIndex],action)
+        schellUpdate()
+    }
+    return [hooksState[hookIndex++], dispatch]
 }
 function mount(vdom,container){
     let Newdom = createDom(vdom)
