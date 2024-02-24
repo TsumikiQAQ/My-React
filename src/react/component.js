@@ -71,10 +71,17 @@ class Component{
         let newVnode = this.render()
         let oldVnode = this.oldVnode
         let dom = findDom(oldVnode)
+        if(this.constructor.getDerivedStateFromProps){
+            let newState = this.constructor.getDerivedStateFromProps(this.props,this.state)
+            if(newState){
+                this.state = {...this.state,...newState}
+            }
+        }
         twoVnode(dom.parentNode,oldVnode,newVnode)
         this.oldVnode = newVnode
+        let snapshot = this.getSnapshotBeforeUpdate&&this.getSnapshotBeforeUpdate()
         if(this.componentDidUpdate){
-            this.componentDidUpdate()
+            this.componentDidUpdate(this.props,this.state,snapshot)
         }
     }
 }
