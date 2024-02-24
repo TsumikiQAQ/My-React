@@ -2,8 +2,24 @@ import addEvent from './event'
 /* eslint-disable eqeqeq */
 import { REACT_TEXT,REACT_FORWARDREF, MOVE, REACTNEXT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO} from "./type"
 
+let hooksState = []
+let hookIndex = 0
+let schellUpdate
 function render(vdom,container){
     mount(vdom,container)
+    schellUpdate = ()=>{
+        hookIndex = 0
+        twoVnode(container,vdom,vdom)
+    }
+}
+export function useState(inistalState){
+    hooksState[hookIndex] = hooksState[hookIndex] || inistalState
+    let currentIndex = hookIndex
+    function setState(newState){
+        hooksState[currentIndex] = newState
+        schellUpdate()
+    }
+    return [hooksState[hookIndex++], setState]
 }
 function mount(vdom,container){
     let Newdom = createDom(vdom)
