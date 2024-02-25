@@ -78,6 +78,9 @@ function memo(type,compare = shallEqual){
 function useImperativeHandle(ref,factory){
     ref.current = factory()
 }
+function useContext(context){
+    return context._currentValue
+}
 const React = {
     createElement,
     Component,
@@ -94,7 +97,8 @@ const React = {
     useEffect,
     useLayoutEffect,
     useRef,
-    useImperativeHandle
+    useImperativeHandle,
+    useContext
 }
 
 export default React
