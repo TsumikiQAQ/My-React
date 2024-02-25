@@ -1,7 +1,7 @@
 import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARDREF, REACT_MEMO, REACT_PROVIDER } from "./type"
 import { toObject,shallEqual } from "./utils"
 import Component from "./component"
-import {useState,useReducer,useMemo,useCallback} from './react-dom'
+import {useState,useReducer,useMemo,useCallback,useEffect} from './react-dom'
 function createElement (type,config,children){
     let key,ref
     if(config){
@@ -87,7 +87,8 @@ const React = {
     useState,
     useReducer,
     useMemo,
-    useCallback
+    useCallback,
+    useEffect
 }
 
 export default React

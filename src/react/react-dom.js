@@ -47,19 +47,26 @@ export function useCallback(callback,deps){
     }
 }
 export function useState(inistalState){
-    hooksState[hookIndex] = hooksState[hookIndex] || inistalState
-    let currentIndex = hookIndex
-    function setState(newState){
-        hooksState[currentIndex] = newState
-        schellUpdate()
-    }
-    return [hooksState[hookIndex++], setState]
+    // hooksState[hookIndex] = hooksState[hookIndex] || inistalState
+    // let currentIndex = hookIndex
+    // function setState(newState){
+    //     hooksState[currentIndex] = newState
+    //     schellUpdate()
+    // }
+    return useReducer(null,inistalState)
 }
 export function useReducer(reducer,inistalState){
     hooksState[hookIndex] = hooksState[hookIndex] || inistalState
     let currentIndex = hookIndex
     function dispatch(action){
-        hooksState[currentIndex] = reducer(hooksState[currentIndex],action)
+        let oldState = hooksState[currentIndex]
+        if(reducer){
+            let newState = reducer(oldState,action)
+            hooksState[currentIndex] = newState
+        }else{
+            let newState = typeof action == 'function' ? action(oldState) :action
+            hooksState[currentIndex] = newState
+        }
         schellUpdate()
     }
     return [hooksState[hookIndex++], dispatch]
@@ -69,6 +76,27 @@ function mount(vdom,container){
     if(Newdom) container.appendChild(Newdom)
     if(Newdom&&Newdom.componentDidMount){
         Newdom.componentDidMount()
+    }
+}
+export function useEffect(callback,deps){
+    let currentIndex = hookIndex
+    if(hooksState[hookIndex]){
+        let [destory,lastDeps]= hooksState[hookIndex]
+        let same = deps.every((dep,index)=> dep === lastDeps[index])
+        if(same){
+            hookIndex++
+        }else{
+            destory && destory()
+            setTimeout(()=>{
+                hooksState[currentIndex] = [callback(),deps]
+            })
+            hookIndex++
+        }
+    }else{
+        setTimeout(()=>{
+            hooksState[hookIndex] = [callback(),deps]
+        })
+        hookIndex++
     }
 }
 function createDom(vdom){
