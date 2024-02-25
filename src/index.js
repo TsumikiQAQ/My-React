@@ -99,25 +99,34 @@ import ReactDOM from './react/react-dom';
 //     console.log('7:更新完毕');
 //   }
 // }
-class Element extends React.Component{
-    constructor(props) {
-      super(props)
-      this.state = {arr:['a','b','c','d','e','f','g','h','i','j']}
-    }
-    handleClick = (event)=>{
-      this.setState({arr:['a','e','f','g','b']})
-    }
-    render(){
-      return <div>
-        <ul>
-          {this.state.arr.map((item, index)=>{
-           return <li key={index}>{item}</li>
-          })}
-        </ul>
-        <button onClick={this.handleClick}>+</button>
-      </div>
-    }
-  }
+// class Element extends React.Component{
+//     constructor(props) {
+//       super(props)
+//       this.state = {arr:['a','b','c','d','e','f','g','h','i','j']}
+//     }
+//     handleClick = (event)=>{
+//       this.setState({arr:['a','e','f','g','b']})
+//     }
+//     render(){
+//       return <div>
+//         <ul>
+//           {this.state.arr.map((item, index)=>{
+//            return <li key={index}>{item}</li>
+//           })}
+//         </ul>
+//         <button onClick={this.handleClick}>+</button>
+//       </div>
+//     }
+//   }
+function Element(){
+  const ref1 = React.useRef()
+  console.log(ref1);
+  React.useEffect(()=>{
+    ref1.current.innerHTML = 'hello'
+  })
+  return(
+    <h1 ref={ref1}> test</h1>
+)
+}
 let element2 = React.createElement(Element,{})
-console.log(element2);
 ReactDOM.render(element2,document.getElementById('root'));

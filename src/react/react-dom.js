@@ -99,6 +99,31 @@ export function useEffect(callback,deps){
         hookIndex++
     }
 }
+export function useLayoutEffect(callback,deps){
+    let currentIndex = hookIndex
+    if(hooksState[hookIndex]){
+        let [destory,lastDeps]= hooksState[hookIndex]
+        let same = deps.every((dep,index)=> dep === lastDeps[index])
+        if(same){
+            hookIndex++
+        }else{
+            destory && destory()
+            queueMicrotask(()=>{
+                hooksState[currentIndex] = [callback(),deps]
+            })
+            hookIndex++
+        }
+    }else{
+        queueMicrotask(()=>{
+            hooksState[hookIndex] = [callback(),deps]
+        })
+        hookIndex++
+    }
+}
+export function useRef(inistalState){
+    hooksState[hookIndex] = hooksState[hookIndex] || {current:inistalState}
+    return hooksState[hookIndex++]
+}
 function createDom(vdom){
     if(typeof vdom == 'string' || typeof vdom == 'number'){
         vdom = {
@@ -113,7 +138,7 @@ function createDom(vdom){
         return mountMemoComponent(vdom)
     }else if(type && type.$$typeof == REACT_CONTEXT){
         return mountContextComponent(vdom)
-    }else if(type.$$typeof == REACT_PROVIDER){
+    }else if(type && type.$$typeof == REACT_PROVIDER){
         return mountProviderComponent(vdom)
     }else if(type && type.$$typeof == REACT_FORWARDREF){
         return mountForWardRefComponent(vdom)
@@ -191,7 +216,7 @@ function mountClassComponent(vdom){
     return dom
 }
 function mountFunctionComponent(vdom){
-    const { type,props } = vdom
+    const { type,props} = vdom
     let funcVnode =  type(props)
     vdom.oldVnode = funcVnode
     return createDom(funcVnode)

@@ -1,7 +1,7 @@
 import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARDREF, REACT_MEMO, REACT_PROVIDER } from "./type"
 import { toObject,shallEqual } from "./utils"
 import Component from "./component"
-import {useState,useReducer,useMemo,useCallback,useEffect} from './react-dom'
+import {useState,useReducer,useMemo,useCallback,useEffect,useLayoutEffect,useRef} from './react-dom'
 function createElement (type,config,children){
     let key,ref
     if(config){
@@ -55,7 +55,7 @@ function CreateContext(){
 function cloneElement(oldElement,props,children){
     if(arguments.length > 3){
         props.children = Array.prototype.slice.call(arguments,2).map(toObject)
-    }else if (arguments.length == 3){
+    }else if (arguments.length === 3){
         props.children = toObject(children)
     }
     return {
@@ -88,7 +88,9 @@ const React = {
     useReducer,
     useMemo,
     useCallback,
-    useEffect
+    useEffect,
+    useLayoutEffect,
+    useRef
 }
 
 export default React
