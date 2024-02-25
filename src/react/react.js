@@ -75,6 +75,9 @@ function memo(type,compare = shallEqual){
         type
     }
 }
+function useImperativeHandle(ref,factory){
+    ref.current = factory()
+}
 const React = {
     createElement,
     Component,
@@ -90,7 +93,8 @@ const React = {
     useCallback,
     useEffect,
     useLayoutEffect,
-    useRef
+    useRef,
+    useImperativeHandle
 }
 
 export default React
